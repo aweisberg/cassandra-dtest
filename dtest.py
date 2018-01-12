@@ -23,6 +23,7 @@ from cassandra.policies import RetryPolicy, RoundRobinPolicy
 from ccmlib.common import get_version_from_build, is_win
 from ccmlib.node import ToolError, TimeoutError
 from distutils.version import LooseVersion
+from tools.misc import retry_till_success
 
 
 LOG_SAVED_DIR = "logs"
@@ -322,8 +323,7 @@ def create_cf(session, name, key_type="varchar", speculative_retry=None, read_re
         query += ' AND COMPACT STORAGE'
 
     session.execute(query)
-    time.sleep(0.2)
-
+    retry_till_success(session.execute, "SELECT * FROM {} LIMIT 1".format(name))
 
 def create_ks(session, name, rf):
     query = 'CREATE KEYSPACE %s WITH replication={%s}'
@@ -335,7 +335,7 @@ def create_ks(session, name, rf):
         # we assume networkTopologyStrategy
         options = (', ').join(['\'%s\':%d' % (d, r) for d, r in rf.items()])
         session.execute(query % (name, "'class':'NetworkTopologyStrategy', %s" % options))
-    session.execute('USE {}'.format(name))
+    retry_till_success(session.execute, 'USE {}'.format(name))
 
 
 def get_auth_provider(user, password):

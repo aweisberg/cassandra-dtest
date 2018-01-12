@@ -4,6 +4,7 @@ import logging
 from cassandra.concurrent import execute_concurrent_with_args
 
 from dtest import Tester, create_ks
+from tools.misc import retry_till_success
 
 logger = logging.getLogger(__name__)
 
@@ -36,9 +37,13 @@ class TestGlobalRowKeyCache(Tester):
 
                 session.set_keyspace(keyspace_name)
                 session.execute("CREATE TABLE test (k int PRIMARY KEY, v1 int, v2 int)")
+                retry_till_success(session.execute, "SELECT * FROM {} LIMIT 1".format('test'))
                 session.execute("CREATE TABLE test_clustering (k int, v1 int, v2 int, PRIMARY KEY (k, v1))")
+                retry_till_success(session.execute, "SELECT * FROM {} LIMIT 1".format('test_clustering'))
                 session.execute("CREATE TABLE test_counter (k int PRIMARY KEY, v1 counter)")
+                retry_till_success(session.execute, "SELECT * FROM {} LIMIT 1".format('test_counter'))
                 session.execute("CREATE TABLE test_counter_clustering (k int, v1 int, v2 counter, PRIMARY KEY (k, v1))")
+                retry_till_success(session.execute, "SELECT * FROM {} LIMIT 1".format('test_counter_clustering'))
 
                 # insert 100 rows into each table
                 for cf in ('test', 'test_clustering'):
