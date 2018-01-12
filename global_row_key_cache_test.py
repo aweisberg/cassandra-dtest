@@ -30,26 +30,15 @@ class TestGlobalRowKeyCache(Tester):
                     'key_cache_save_period': 5,
                 })
 
-                # give some time to make sure instances stopped above before we start
-                time.sleep(10)
                 cluster.start()
-                # give some time for the cluster to start before we attempt to connect to it
-                time.sleep(10)
                 session = self.patient_cql_connection(node1)
-
-                time.sleep(10)
                 create_ks(session, keyspace_name, rf=3)
 
                 session.set_keyspace(keyspace_name)
-                time.sleep(10)
                 session.execute("CREATE TABLE test (k int PRIMARY KEY, v1 int, v2 int)")
-                time.sleep(10)
                 session.execute("CREATE TABLE test_clustering (k int, v1 int, v2 int, PRIMARY KEY (k, v1))")
-                time.sleep(10)
                 session.execute("CREATE TABLE test_counter (k int PRIMARY KEY, v1 counter)")
-                time.sleep(10)
                 session.execute("CREATE TABLE test_counter_clustering (k int, v1 int, v2 counter, PRIMARY KEY (k, v1))")
-                time.sleep(10)
 
                 # insert 100 rows into each table
                 for cf in ('test', 'test_clustering'):
