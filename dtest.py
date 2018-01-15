@@ -323,7 +323,7 @@ def create_cf(session, name, key_type="varchar", speculative_retry=None, read_re
         query += ' AND COMPACT STORAGE'
 
     session.execute(query)
-    retry_till_success(session.execute, "SELECT * FROM {} LIMIT 1".format(name))
+    session.cluster.control_connection.wait_for_schema_agreement(wait_time=120)
 
 def create_ks(session, name, rf):
     query = 'CREATE KEYSPACE %s WITH replication={%s}'
@@ -335,7 +335,8 @@ def create_ks(session, name, rf):
         # we assume networkTopologyStrategy
         options = (', ').join(['\'%s\':%d' % (d, r) for d, r in rf.items()])
         session.execute(query % (name, "'class':'NetworkTopologyStrategy', %s" % options))
-    retry_till_success(session.execute, 'USE {}'.format(name))
+    session.cluster.control_connection.wait_for_schema_agreement(wait_time=120)
+    session.execute('USE {}'.format(name))
 
 
 def get_auth_provider(user, password):

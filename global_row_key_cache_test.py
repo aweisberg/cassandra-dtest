@@ -37,13 +37,13 @@ class TestGlobalRowKeyCache(Tester):
 
                 session.set_keyspace(keyspace_name)
                 session.execute("CREATE TABLE test (k int PRIMARY KEY, v1 int, v2 int)")
-                retry_till_success(session.execute, "SELECT * FROM {} LIMIT 1".format('test'))
+                session.cluster.control_connection.wait_for_schema_agreement(wait_time=120)
                 session.execute("CREATE TABLE test_clustering (k int, v1 int, v2 int, PRIMARY KEY (k, v1))")
-                retry_till_success(session.execute, "SELECT * FROM {} LIMIT 1".format('test_clustering'))
+                session.cluster.control_connection.wait_for_schema_agreement(wait_time=120)
                 session.execute("CREATE TABLE test_counter (k int PRIMARY KEY, v1 counter)")
-                retry_till_success(session.execute, "SELECT * FROM {} LIMIT 1".format('test_counter'))
+                session.cluster.control_connection.wait_for_schema_agreement(wait_time=120)
                 session.execute("CREATE TABLE test_counter_clustering (k int, v1 int, v2 counter, PRIMARY KEY (k, v1))")
-                retry_till_success(session.execute, "SELECT * FROM {} LIMIT 1".format('test_counter_clustering'))
+                session.cluster.control_connection.wait_for_schema_agreement(wait_time=120)
 
                 # insert 100 rows into each table
                 for cf in ('test', 'test_clustering'):
