@@ -322,20 +322,42 @@ def create_cf(session, name, key_type="varchar", speculative_retry=None, read_re
     if compact_storage:
         query += ' AND COMPACT STORAGE'
 
-    session.execute(query)
+    try:
+        retry_till_success(session.execute, query=query, timeout=120, bypassed_exception=cassandra.OperationTimedOut)
+    except cassandra.AlreadyExists:
+        logger.warn('AlreadyExists executing create cf query \'%s\'' % query)
     session.cluster.control_connection.wait_for_schema_agreement(wait_time=120)
+    #Going to ignore OperationTimedOut from create CF, so need to validate it was indeed created
+    session.execute('SELECT * FROM %s LIMIT 1' % name);
+
+def create_cf_simple(session, name, query):
+    try:
+        retry_till_success(session.execute, query=query, timeout=120, bypassed_exception=cassandra.OperationTimedOut)
+    except cassandra.AlreadyExists:
+        logger.warn('AlreadyExists executing create cf query \'%s\'' % query)
+    session.cluster.control_connection.wait_for_schema_agreement(wait_time=120)
+    #Going to ignore OperationTimedOut from create CF, so need to validate it was indeed created
+    session.execute('SELECT * FROM %s LIMIT 1' % name)
 
 def create_ks(session, name, rf):
     query = 'CREATE KEYSPACE %s WITH replication={%s}'
     if isinstance(rf, int):
         # we assume simpleStrategy
-        session.execute(query % (name, "'class':'SimpleStrategy', 'replication_factor':%d" % rf))
+        query = query % (name, "'class':'SimpleStrategy', 'replication_factor':%d" % rf)
     else:
         assert len(rf) >= 0, "At least one datacenter/rf pair is needed"
         # we assume networkTopologyStrategy
         options = (', ').join(['\'%s\':%d' % (d, r) for d, r in rf.items()])
-        session.execute(query % (name, "'class':'NetworkTopologyStrategy', %s" % options))
+        query = query % (name, "'class':'NetworkTopologyStrategy', %s" % options)
+
+    try:
+        retry_till_success(session.execute, query=query, timeout=120, bypassed_exception=cassandra.OperationTimedOut)
+    except cassandra.AlreadyExists:
+        logger.warn('AlreadyExists executing create ks query \'%s\'' % query)
+
     session.cluster.control_connection.wait_for_schema_agreement(wait_time=120)
+    #Also validates it was indeed created even though we ignored OperationTimedOut
+    #Might happen some of the time because CircleCI disk IO is unreliable and hangs randomly
     session.execute('USE {}'.format(name))
 
 

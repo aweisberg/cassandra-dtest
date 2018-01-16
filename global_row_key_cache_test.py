@@ -3,8 +3,7 @@ import logging
 
 from cassandra.concurrent import execute_concurrent_with_args
 
-from dtest import Tester, create_ks
-from tools.misc import retry_till_success
+from dtest import Tester, create_ks, create_cf_simple
 
 logger = logging.getLogger(__name__)
 
@@ -36,14 +35,12 @@ class TestGlobalRowKeyCache(Tester):
                 create_ks(session, keyspace_name, rf=3)
 
                 session.set_keyspace(keyspace_name)
-                session.execute("CREATE TABLE test (k int PRIMARY KEY, v1 int, v2 int)")
-                session.cluster.control_connection.wait_for_schema_agreement(wait_time=120)
-                session.execute("CREATE TABLE test_clustering (k int, v1 int, v2 int, PRIMARY KEY (k, v1))")
-                session.cluster.control_connection.wait_for_schema_agreement(wait_time=120)
-                session.execute("CREATE TABLE test_counter (k int PRIMARY KEY, v1 counter)")
-                session.cluster.control_connection.wait_for_schema_agreement(wait_time=120)
-                session.execute("CREATE TABLE test_counter_clustering (k int, v1 int, v2 counter, PRIMARY KEY (k, v1))")
-                session.cluster.control_connection.wait_for_schema_agreement(wait_time=120)
+                create_cf_simple(session, 'test', "CREATE TABLE test (k int PRIMARY KEY, v1 int, v2 int)")
+                create_cf_simple(session, 'test_clustering',
+                                 "CREATE TABLE test_clustering (k int, v1 int, v2 int, PRIMARY KEY (k, v1))")
+                create_cf_simple(session, 'test_counter', "CREATE TABLE test_counter (k int PRIMARY KEY, v1 counter)")
+                create_cf_simple(session, 'test_counter_clustering',
+                                 "CREATE TABLE test_counter_clustering (k int, v1 int, v2 counter, PRIMARY KEY (k, v1))")
 
                 # insert 100 rows into each table
                 for cf in ('test', 'test_clustering'):
