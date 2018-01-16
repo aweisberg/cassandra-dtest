@@ -20,7 +20,7 @@ from tools.assertions import (assert_almost_equal, assert_bootstrap_state, asser
 from tools.data import query_c1c2
 from tools.intervention import InterruptBootstrap, KillOnBootstrap
 from tools.misc import new_node
-from tools.misc import generate_ssl_stores
+from tools.misc import generate_ssl_stores, retry_till_success
 
 since = pytest.mark.since
 logger = logging.getLogger(__name__)
@@ -320,7 +320,7 @@ class TestBootstrap(Tester):
         node3.watch_log_for("Starting listening for CQL clients")
         mark = node3.mark_log()
         # check if node3 is still in bootstrap mode
-        assert_bootstrap_state(self, node3, 'IN_PROGRESS')
+        retry_till_success(assert_bootstrap_state, tester=self, node=node3, expected_boostrap_state='IN_PROGRESS', timeout=120)
 
         # bring back node1 and invoke nodetool bootstrap to resume bootstrapping
         node3.nodetool('bootstrap resume')
