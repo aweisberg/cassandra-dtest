@@ -129,6 +129,7 @@ class TestSecondaryIndexes(Tester):
             result = list(session.execute("SELECT * FROM ks.cf WHERE b='1' LIMIT %d;" % (limit,)))
             assert limit == len(result)
 
+    @flaky(3)
     def test_6924_dropping_ks(self):
         """
         @jira_ticket CASSANDRA-6924
@@ -288,21 +289,8 @@ class TestSecondaryIndexes(Tester):
             pass
 
     def wait_for_schema_agreement(self, session):
-        rows = list(session.execute("SELECT schema_version FROM system.local"))
-        local_version = rows[0]
-
-        all_match = True
-        rows = list(session.execute("SELECT schema_version FROM system.peers"))
-        for peer_version in rows:
-            if peer_version != local_version:
-                all_match = False
-                break
-
-        if all_match:
-            return
-        else:
-            time.sleep(1)
-            self.wait_for_schema_agreement(session)
+        if not session.cluster.control_connection.wait_for_schema_agreement(wait_time=120):
+            raise AssertionError("Failed to reach schema agreement")
 
     @since('3.0')
     def test_manual_rebuild_index(self):
