@@ -64,15 +64,10 @@ class TestTopology(Tester):
 
         logger.debug("Creating keyspaces")
         session = self.patient_cql_connection(node1_1)
-        time.sleep(5)
         create_ks(session, 'ks1', 3)
-        time.sleep(5)
         create_ks(session, 'ks2', {'dc1': 2})
-        time.sleep(5)
         create_cf(session, 'ks1.cf1', columns={'c1': 'text', 'c2': 'text'})
-        time.sleep(5)
         create_cf(session, 'ks2.cf2', columns={'c1': 'text', 'c2': 'text'})
-        time.sleep(5)
 
         logger.debug("Refreshing size estimates")
         node1_1.nodetool('refreshsizeestimates')
