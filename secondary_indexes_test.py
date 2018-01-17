@@ -159,17 +159,13 @@ class TestSecondaryIndexes(Tester):
         for i in range(10):
             logger.debug("round %s" % i)
             try:
-                time.sleep(5)
                 session.execute("DROP KEYSPACE ks")
             except ConfigurationException:
                 pass
 
             create_ks(session, 'ks', 1)
-            time.sleep(5)
             session.execute("CREATE TABLE ks.cf (key text PRIMARY KEY, col1 text);")
-            time.sleep(5)
             session.execute("CREATE INDEX on ks.cf (col1);")
-            time.sleep(5)
 
             for r in range(10):
                 stmt = "INSERT INTO ks.cf (key, col1) VALUES ('%s','asdf');" % r
