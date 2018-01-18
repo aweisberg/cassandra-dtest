@@ -255,7 +255,6 @@ class TestBootstrap(Tester):
             node3_token = tokens[1]  # Add node 3 between node1 and node2
 
         cluster.start()
-        time.sleep(10)
 
         node1.stress(['write', 'n=10K', 'no-warmup', '-rate', 'threads=8', '-schema', 'replication(factor={})'.format(rf)])
 
