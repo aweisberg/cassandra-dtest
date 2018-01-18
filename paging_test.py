@@ -2265,17 +2265,11 @@ class TestPagingData(BasePagingTester, PageAssertionMixin):
 
     def _test_paging_with_filtering_on_partition_key_on_counter_columns(self, session, with_compact_storage):
         if with_compact_storage:
-            time.sleep(10)
             create_ks(session, 'test_flt_counter_columns_compact_storage', 2)
-            time.sleep(10)
             session.execute("CREATE TABLE test (a int, b int, c int, cnt counter, PRIMARY KEY (a, b, c)) WITH COMPACT STORAGE")
-            time.sleep(10)
         else:
-            time.sleep(10)
             create_ks(session, 'test_flt_counter_columns', 2)
-            time.sleep(10)
             session.execute("CREATE TABLE test (a int, b int, c int, cnt counter, PRIMARY KEY (a, b, c))")
-            time.sleep(10)
 
         for i in range(5):
             for j in range(10):
