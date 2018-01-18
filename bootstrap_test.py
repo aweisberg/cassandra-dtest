@@ -319,7 +319,7 @@ class TestBootstrap(Tester):
         node3.watch_log_for("Starting listening for CQL clients")
         mark = node3.mark_log()
         # check if node3 is still in bootstrap mode
-        retry_till_success(assert_bootstrap_state, tester=self, node=node3, expected_boostrap_state='IN_PROGRESS', timeout=120)
+        retry_till_success(assert_bootstrap_state, tester=self, node=node3, expected_bootstrap_state='IN_PROGRESS', timeout=120)
 
         # bring back node1 and invoke nodetool bootstrap to resume bootstrapping
         node3.nodetool('bootstrap resume')
