@@ -204,9 +204,9 @@ def cleanup_docker_environment_before_test_execution():
     # note: to mitigate this further the docker image is mounting /tmp as a volume, which gives
     # us an ext4 mount which should talk directly to the underlying device on the host, skipping
     # the aufs pain that we get with anything else running in the docker image. Originally,
-    # I had a timeout of 120 seconds (2 minutes) but sync was still occasionally timing out.
+    # I had a timeout of 120 seconds (2 minutes), 300 seconds (5 minutes) but sync was still occasionally timing out.
     p_sync = subprocess.Popen('sudo /bin/sync', shell=True)
-    p_sync.wait(timeout=300)
+    p_sync.wait(timeout=600)
 
     # turn swap off and back on to make sure it's fully cleared if anything happened to swap
     # from a previous test run
