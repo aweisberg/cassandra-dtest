@@ -235,6 +235,9 @@ class JolokiaAgent(object):
             result = subprocess.run([args_help2], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
             print(result.stdout.decode())
             print(result.stderr.decode())
+            result = subprocess.run(['whoami'], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+            print(result.stdout.decode())
+            print(result.stderr.decode())
             raise
 
     def stop(self):
