@@ -198,6 +198,7 @@ class JolokiaAgent(object):
         Starts the Jolokia agent.  The process will fork from the parent
         and continue running until stop() is called.
         """
+        print("Attaching jolokia to PID %s" % (self.node.pid))
         args = (java_bin(),
                 '-cp', jolokia_classpath(),
                 'org.jolokia.jvmagent.client.AgentLauncher',
