@@ -205,17 +205,6 @@ class JolokiaAgent(object):
                 '--host', self.node.network_interfaces['binary'][0],
                 'start', str(self.node.pid))
 
-        args_help = (java_bin(),
-                '-cp', jolokia_classpath(),
-                'org.jolokia.jvmagent.client.AgentLauncher',
-                '--help', '--host', self.node.network_interfaces['binary'][0],
-                'start', str(self.node.pid))
-
-        args_help2 = (java_bin(),
-                '-cp', jolokia_classpath(),
-                'org.jolokia.jvmagent.client.AgentLauncher',
-                '--help')
-
         try:
             subprocess.check_output(args, stderr=subprocess.STDOUT)
         except subprocess.CalledProcessError as exc:
@@ -230,12 +219,6 @@ class JolokiaAgent(object):
             print(result.stderr.decode())
             with open(self.node.logfilename()) as f:
                 print(f.read())
-            result = subprocess.run([args_help], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-            print(result.stdout.decode())
-            print(result.stderr.decode())
-            result = subprocess.run([args_help2], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-            print(result.stdout.decode())
-            print(result.stderr.decode())
             raise
 
     def stop(self):
