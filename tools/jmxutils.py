@@ -211,14 +211,6 @@ class JolokiaAgent(object):
             print("Failed to start jolokia agent (command was: %s): %s" % (' '.join(args), exc))
             print("Exit status was: %d" % (exc.returncode,))
             print("Output was: %s" % (exc.output,))
-            result = subprocess.run(['ps', '-aux'], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-            print(result.stdout.decode())
-            print(result.stderr.decode())
-            result = subprocess.run(['netstat', '-tnlp'], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-            print(result.stdout.decode())
-            print(result.stderr.decode())
-            with open(self.node.logfilename()) as f:
-                print(f.read())
             raise
 
     def stop(self):
