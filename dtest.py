@@ -346,7 +346,7 @@ def create_ks(session, name, rf, allow_transient=True, if_not_exists=False):
 
     if isinstance(rf, int):
         # we assume simpleStrategy
-        query = query % (name, "'class':'SimpleStrategy', 'replication_factor':%s" % (transient_conversions.get(rf, str(rf)) if attempt_transient_replication and allow_transient else str(rf)))
+        query = query % (name, "'class':'SimpleStrategy', 'replication_factor':'%s'" % (transient_conversions.get(rf, str(rf)) if attempt_transient_replication and allow_transient else str(rf)))
     else:
         assert len(rf) >= 0, "At least one datacenter/rf pair is needed"
         # we assume networkTopologyStrategy
