@@ -4,7 +4,7 @@ import time
 from cassandra import ConsistencyLevel
 from cassandra.query import SimpleStatement
 
-from dtest import Tester
+from dtest import Tester, create_ks
 
 since = pytest.mark.since
 
@@ -27,7 +27,7 @@ class TestPreviewRepair(Tester):
         node1, node2, node3 = cluster.nodelist()
 
         session = self.patient_exclusive_cql_connection(node3)
-        session.execute("CREATE KEYSPACE ks WITH REPLICATION={'class':'SimpleStrategy', 'replication_factor': 3}")
+        create_ks(session, "ks", 3)
         session.execute("CREATE TABLE ks.tbl (k INT PRIMARY KEY, v INT)")
 
         # everything should be in sync

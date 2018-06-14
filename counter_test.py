@@ -37,10 +37,7 @@ class TestCounters(Tester):
         node1, node2, node3 = cluster.nodelist()
 
         session = self.patient_cql_connection(node1)
-        session.execute("""
-            CREATE KEYSPACE test
-                WITH replication = {'class': 'SimpleStrategy', 'replication_factor': 3};
-            """)
+        create_ks(session, "test", 3)
         session.execute("CREATE TABLE test.test (id int PRIMARY KEY, c counter);")
 
         #

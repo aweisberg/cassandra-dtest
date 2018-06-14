@@ -367,7 +367,7 @@ class TestSnitchConfigurationUpdate(Tester):
 
         Confirm that when racks are collapsed using a gossiping property file snitch the RF is not impacted.
         """
-        self._test_rf_on_snitch_update(nodes=[3], rf={'class': '\'NetworkTopologyStrategy\'', 'dc1': 3},
+        self._test_rf_on_snitch_update(nodes=[3], rf={'dc1': 3},
                                        snitch_class_name='GossipingPropertyFileSnitch',
                                        snitch_config_file='cassandra-rackdc.properties',
                                        snitch_lines_before=lambda i, node: ["dc=dc1", "rack=rack{}".format(i)],
@@ -383,7 +383,7 @@ class TestSnitchConfigurationUpdate(Tester):
 
         Confirm that when racks are expanded using a gossiping property file snitch the RF is not impacted.
         """
-        self._test_rf_on_snitch_update(nodes=[3], rf={'class': '\'NetworkTopologyStrategy\'', 'dc1': 3},
+        self._test_rf_on_snitch_update(nodes=[3], rf={'dc1': 3},
                                        snitch_class_name='GossipingPropertyFileSnitch',
                                        snitch_config_file='cassandra-rackdc.properties',
                                        snitch_lines_before=lambda i, node: ["dc=dc1", "rack=rack1"],
@@ -400,7 +400,7 @@ class TestSnitchConfigurationUpdate(Tester):
 
         Confirm that when racks are collapsed using a gossiping property file snitch the RF is not impacted, in a multi-dc environment.
         """
-        self._test_rf_on_snitch_update(nodes=[3, 3], rf={'class': '\'NetworkTopologyStrategy\'', 'dc1': 3, 'dc2': 3},
+        self._test_rf_on_snitch_update(nodes=[3, 3], rf={'dc1': 3, 'dc2': 3},
                                        snitch_class_name='GossipingPropertyFileSnitch',
                                        snitch_config_file='cassandra-rackdc.properties',
                                        snitch_lines_before=lambda i, node: ["dc={}".format(node.data_center), "rack=rack{}".format(i % 3)],
@@ -417,7 +417,7 @@ class TestSnitchConfigurationUpdate(Tester):
 
         Confirm that when racks are expanded using a gossiping property file snitch the RF is not impacted, in a multi-dc environment.
         """
-        self._test_rf_on_snitch_update(nodes=[3, 3], rf={'class': '\'NetworkTopologyStrategy\'', 'dc1': 3, 'dc2': 3},
+        self._test_rf_on_snitch_update(nodes=[3, 3], rf={'dc1': 3, 'dc2': 3},
                                        snitch_class_name='GossipingPropertyFileSnitch',
                                        snitch_config_file='cassandra-rackdc.properties',
                                        snitch_lines_before=lambda i, node: ["dc={}".format(node.data_center), "rack=rack1"],
@@ -433,7 +433,7 @@ class TestSnitchConfigurationUpdate(Tester):
 
         Confirm that when racks are collapsed using a property file snitch the RF is not impacted.
         """
-        self._test_rf_on_snitch_update(nodes=[3], rf={'class': '\'NetworkTopologyStrategy\'', 'dc1': 3},
+        self._test_rf_on_snitch_update(nodes=[3], rf={'dc1': 3},
                                        snitch_class_name='PropertyFileSnitch',
                                        snitch_config_file='cassandra-topology.properties',
                                        snitch_lines_before=lambda i, node: ["127.0.0.1=dc1:rack0", "127.0.0.2=dc1:rack1", "127.0.0.3=dc1:rack2"],
@@ -449,7 +449,7 @@ class TestSnitchConfigurationUpdate(Tester):
 
         Confirm that when racks are expanded using a property file snitch the RF is not impacted.
         """
-        self._test_rf_on_snitch_update(nodes=[3], rf={'class': '\'NetworkTopologyStrategy\'', 'dc1': 3},
+        self._test_rf_on_snitch_update(nodes=[3], rf={'dc1': 3},
                                        snitch_class_name='PropertyFileSnitch',
                                        snitch_config_file='cassandra-topology.properties',
                                        snitch_lines_before=lambda i, node: ["default=dc1:rack0"],
@@ -466,7 +466,7 @@ class TestSnitchConfigurationUpdate(Tester):
 
         Confirm that when racks are collapsed using a yaml file snitch the RF is not impacted.
         """
-        self._test_rf_on_snitch_update(nodes=[3], rf={'class': '\'NetworkTopologyStrategy\'', 'dc1': 3},
+        self._test_rf_on_snitch_update(nodes=[3], rf={'dc1': 3},
                                        snitch_class_name='YamlFileNetworkTopologySnitch',
                                        snitch_config_file='cassandra-topology.yaml',
                                        snitch_lines_before=lambda i, node: ["topology:",
@@ -501,7 +501,7 @@ class TestSnitchConfigurationUpdate(Tester):
 
         Confirm that when racks are expanded using a yaml file snitch the RF is not impacted.
         """
-        self._test_rf_on_snitch_update(nodes=[3], rf={'class': '\'NetworkTopologyStrategy\'', 'dc1': 3},
+        self._test_rf_on_snitch_update(nodes=[3], rf={'dc1': 3},
                                        snitch_class_name='YamlFileNetworkTopologySnitch',
                                        snitch_config_file='cassandra-topology.yaml',
                                        snitch_lines_before=lambda i, node: ["topology:",
@@ -545,8 +545,7 @@ class TestSnitchConfigurationUpdate(Tester):
 
         session = self.patient_cql_connection(cluster.nodelist()[0])
 
-        options = (', ').join(['\'{}\': {}'.format(d, r) for d, r in rf.items()])
-        session.execute("CREATE KEYSPACE testing WITH replication = {{{}}}".format(options))
+        create_ks(session, "testing", rf)
         session.execute("CREATE TABLE testing.rf_test (key text PRIMARY KEY, value text)")
 
         # avoid errors in nodetool calls below checking for the endpoint count

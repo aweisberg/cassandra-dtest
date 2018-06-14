@@ -3,7 +3,7 @@ import pytest
 from cassandra import AuthenticationFailed, Unauthorized
 from cassandra.cluster import NoHostAvailable
 
-from dtest import Tester
+from dtest import Tester, create_ks
 
 
 class TestAuth(Tester):
@@ -121,7 +121,7 @@ class TestAuth(Tester):
 
         cassandra = self.get_session(user='cassandra', password='cassandra')
         cassandra.execute("CREATE USER cathy WITH PASSWORD '12345'")
-        cassandra.execute("CREATE KEYSPACE ks WITH replication = {'class':'SimpleStrategy', 'replication_factor':3}")
+        create_ks(cassandra, "ks", 3);
         cassandra.execute("CREATE TABLE ks.cf (id int primary key, val int)")
 
         node2 = self.cluster.create_node('node2', False,

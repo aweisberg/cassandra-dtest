@@ -5,7 +5,7 @@ from cassandra import ConsistencyLevel, ReadFailure, ReadTimeout
 from cassandra.policies import FallthroughRetryPolicy
 from cassandra.query import SimpleStatement
 
-from dtest import Tester
+from dtest import Tester, create_ks
 
 since = pytest.mark.since
 logger = logging.getLogger(__name__)
@@ -42,10 +42,7 @@ class TestReadFailures(Tester):
 
         session = self.patient_exclusive_cql_connection(self.nodes[0], protocol_version=self.protocol_version)
 
-        session.execute("""
-            CREATE KEYSPACE IF NOT EXISTS %s
-            WITH replication = { 'class': 'SimpleStrategy', 'replication_factor': '%s' }
-            """ % (KEYSPACE, self.replication_factor))
+        create_ks(session, KEYSPACE, self.replication_factor, if_not_exists=True)
         session.set_keyspace(KEYSPACE)
         session.execute("CREATE TABLE IF NOT EXISTS tombstonefailure (id int, c int, value text, primary key(id, c))")
 

@@ -101,7 +101,7 @@ class TestIncRepair(Tester):
 
         # make data inconsistent between nodes
         session = self.patient_exclusive_cql_connection(node3)
-        session.execute("CREATE KEYSPACE ks WITH REPLICATION={'class':'SimpleStrategy', 'replication_factor': 3}")
+        create_ks(session, "ks", 3)
         session.execute("CREATE TABLE ks.tbl (k INT PRIMARY KEY, v INT)")
         stmt = SimpleStatement("INSERT INTO ks.tbl (k,v) VALUES (%s, %s)")
         stmt.consistency_level = ConsistencyLevel.ALL
@@ -212,7 +212,7 @@ class TestIncRepair(Tester):
 
         # make data inconsistent between nodes
         session = self.patient_exclusive_cql_connection(node3)
-        session.execute("CREATE KEYSPACE ks WITH REPLICATION={'class':'SimpleStrategy', 'replication_factor': 3}")
+        create_ks(session, "ks", 3)
         session.execute("CREATE TABLE ks.tbl (k INT PRIMARY KEY, v INT)")
 
         for node in self.cluster.nodelist():
@@ -251,7 +251,7 @@ class TestIncRepair(Tester):
 
         # make data inconsistent between nodes
         session = self.patient_exclusive_cql_connection(node3)
-        session.execute("CREATE KEYSPACE ks WITH REPLICATION={'class':'SimpleStrategy', 'replication_factor': 3}")
+        create_ks(session, "ks", 3)
         session.execute("CREATE TABLE ks.tbl (k INT PRIMARY KEY, v INT)")
 
         for node in self.cluster.nodelist():
@@ -294,7 +294,7 @@ class TestIncRepair(Tester):
 
         # make data inconsistent between nodes
         session = self.patient_exclusive_cql_connection(node3)
-        session.execute("CREATE KEYSPACE ks WITH REPLICATION={'class':'SimpleStrategy', 'replication_factor': 3}")
+        create_ks(session, "ks", 3)
         session.execute("CREATE TABLE ks.tbl (k INT PRIMARY KEY, v INT)")
 
         for node in self.cluster.nodelist():
@@ -808,7 +808,7 @@ class TestIncRepair(Tester):
         node1, node2, node3 = self.cluster.nodelist()
 
         session = self.patient_exclusive_cql_connection(node3)
-        session.execute("CREATE KEYSPACE ks WITH REPLICATION={'class':'SimpleStrategy', 'replication_factor': 3}")
+        create_ks(session, "ks", 3)
         session.execute("CREATE TABLE ks.tbl (k INT PRIMARY KEY, v INT)")
         stmt = SimpleStatement("INSERT INTO ks.tbl (k,v) VALUES (%s, %s)")
         stmt.consistency_level = ConsistencyLevel.ALL
@@ -841,7 +841,7 @@ class TestIncRepair(Tester):
         node1, node2, node3 = self.cluster.nodelist()
 
         session = self.patient_exclusive_cql_connection(node3)
-        session.execute("CREATE KEYSPACE ks WITH REPLICATION={'class':'SimpleStrategy', 'replication_factor': 3}")
+        create_ks(session, "ks", 3)
         session.execute("CREATE TABLE ks.tbl (k INT PRIMARY KEY, v INT)")
         stmt = SimpleStatement("INSERT INTO ks.tbl (k,v) VALUES (%s, %s)")
         stmt.consistency_level = ConsistencyLevel.ALL
@@ -869,7 +869,7 @@ class TestIncRepair(Tester):
         node1, node2, node3 = self.cluster.nodelist()
 
         session = self.patient_exclusive_cql_connection(node3)
-        session.execute("CREATE KEYSPACE ks WITH REPLICATION={'class':'SimpleStrategy', 'replication_factor': 3}")
+        create_ks(session, "ks", 3)
         session.execute("CREATE TABLE ks.tbl (k INT PRIMARY KEY, v INT)")
         stmt = SimpleStatement("INSERT INTO ks.tbl (k,v) VALUES (%s, %s)")
         stmt.consistency_level = ConsistencyLevel.ALL
@@ -897,7 +897,7 @@ class TestIncRepair(Tester):
         node1, node2, node3 = self.cluster.nodelist()
 
         session = self.patient_exclusive_cql_connection(node3)
-        session.execute("CREATE KEYSPACE ks WITH REPLICATION={'class':'SimpleStrategy', 'replication_factor': 3}")
+        create_ks(session, "ks", 3)
         session.execute("CREATE TABLE ks.tbl (k INT PRIMARY KEY, v INT)")
         stmt = SimpleStatement("INSERT INTO ks.tbl (k,v) VALUES (%s, %s)")
         stmt.consistency_level = ConsistencyLevel.ALL

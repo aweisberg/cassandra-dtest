@@ -154,7 +154,7 @@ class TestDynamicEndpointSnitch(Tester):
         read_stage = make_mbean('metrics', type='ThreadPools', path='request',
                                 scope='ReadStage', name='CompletedTasks')
         session = self.patient_exclusive_cql_connection(coordinator_node)
-        session.execute("CREATE KEYSPACE snitchtestks WITH replication = {'class': 'NetworkTopologyStrategy', 'dc1': 3, 'dc2': 3}")
+        create_ks(session, "snitchtestks", {'dc1': 3, 'dc2': 3})
         session.execute("CREATE TABLE snitchtestks.tbl1 (key int PRIMARY KEY) WITH speculative_retry = 'NONE' AND dclocal_read_repair_chance = 0.0")
         read_stmt = session.prepare("SELECT * FROM snitchtestks.tbl1 where key = ?")
         read_stmt.consistency_level = ConsistencyLevel.LOCAL_QUORUM

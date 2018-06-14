@@ -60,7 +60,7 @@ class TestMaterializedViews(Tester):
         node1 = cluster.nodelist()[0]
 
         session = self.patient_cql_connection(node1, **kwargs)
-        create_ks(session, 'ks', rf)
+        create_ks(session, 'ks', rf, allow_transient=False)
 
         if user_table:
             session.execute(
@@ -2369,7 +2369,7 @@ class TestMaterializedViews(Tester):
         cluster.start()
         node1, node2, node3 = self.cluster.nodelist()
         session = self.patient_cql_connection(node1, consistency_level=ConsistencyLevel.QUORUM)
-        create_ks(session, 'ks', 3)
+        create_ks(session, 'ks', 3, allow_transient=False)
 
         session.execute('CREATE TABLE users (username varchar PRIMARY KEY, state varchar)')
 

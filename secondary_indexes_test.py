@@ -43,7 +43,7 @@ class TestSecondaryIndexes(Tester):
         [node1] = cluster.nodelist()
 
         session = self.patient_cql_connection(node1)
-        create_ks(session, 'ks', 1)
+        create_ks(session, 'ks', 1, allow_transient=False)
 
         columns = {"password": "varchar", "gender": "varchar", "session_token": "varchar", "state": "varchar", "birth_year": "bigint"}
         create_cf(session, 'users', columns=columns)
@@ -164,7 +164,7 @@ class TestSecondaryIndexes(Tester):
             except (ConfigurationException, InvalidRequest):
                 pass
 
-            create_ks(session, 'ks', 1)
+            create_ks(session, 'ks', 1, allow_transient=False)
             session.execute("CREATE TABLE ks.cf (key text PRIMARY KEY, col1 text);")
             session.execute("CREATE INDEX on ks.cf (col1);")
 
@@ -192,7 +192,7 @@ class TestSecondaryIndexes(Tester):
         node1, node2, node3 = cluster.nodelist()
         session = self.patient_cql_connection(node1)
 
-        create_ks(session, 'ks', 1)
+        create_ks(session, 'ks', 1, allow_transient=False)
 
         # This only occurs when dropping and recreating with
         # the same name, so loop through this test a few times:
@@ -228,7 +228,7 @@ class TestSecondaryIndexes(Tester):
         node1 = cluster.nodelist()[0]
         session = self.patient_cql_connection(node1)
 
-        create_ks(session, 'ks', 1)
+        create_ks(session, 'ks', 1, allow_transient=False)
 
         self.insert_row_with_oversize_value("CREATE TABLE %s(a int, b int, c text, PRIMARY KEY (a))",
                                             "CREATE INDEX ON %s(c)",
@@ -252,7 +252,7 @@ class TestSecondaryIndexes(Tester):
         node1 = cluster.nodelist()[0]
         session = self.patient_cql_connection(node1)
 
-        create_ks(session, 'ks', 1)
+        create_ks(session, 'ks', 1, allow_transient=False)
         self.insert_row_with_oversize_value("CREATE TABLE %s(a int, b text, PRIMARY KEY (a)) WITH COMPACT STORAGE",
                                             "CREATE INDEX ON %s(b)",
                                             "INSERT INTO %s (a, b) VALUES (0, ?)",
@@ -336,7 +336,7 @@ class TestSecondaryIndexes(Tester):
         node = cluster.nodelist()[0]
 
         session = self.patient_cql_connection(node)
-        create_ks(session, 'k', 1)
+        create_ks(session, 'k', 1, allow_transient=False)
         session.execute("CREATE TABLE k.t (k int PRIMARY KEY, v int)")
         session.execute("CREATE INDEX idx ON k.t(v)")
         session.execute("INSERT INTO k.t(k, v) VALUES (0, 1)")
@@ -446,7 +446,7 @@ class TestSecondaryIndexes(Tester):
         node = cluster.nodelist()[0]
 
         session = self.patient_cql_connection(node)
-        create_ks(session, 'k', 1)
+        create_ks(session, 'k', 1, allow_transient=False)
         session.execute("CREATE TABLE k.t (k int PRIMARY KEY, v int)")
         session.execute("INSERT INTO k.t(k, v) VALUES (0, 1)")
 
@@ -623,7 +623,7 @@ class TestSecondaryIndexesOnCollections(Tester):
         cluster.populate(1).start()
         [node1] = cluster.nodelist()
         session = self.patient_cql_connection(node1)
-        create_ks(session, 'tuple_index_test', 1)
+        create_ks(session, 'tuple_index_test', 1, allow_transient=False)
         session.execute("use tuple_index_test")
         session.execute("""
             CREATE TABLE simple_with_tuple (
@@ -710,7 +710,7 @@ class TestSecondaryIndexesOnCollections(Tester):
         cluster.populate(1).start()
         [node1] = cluster.nodelist()
         session = self.patient_cql_connection(node1)
-        create_ks(session, 'list_index_search', 1)
+        create_ks(session, 'list_index_search', 1, allow_transient=False)
 
         stmt = ("CREATE TABLE list_index_search.users ("
                 "user_id uuid PRIMARY KEY,"
@@ -800,7 +800,7 @@ class TestSecondaryIndexesOnCollections(Tester):
         cluster.populate(1).start()
         [node1] = cluster.nodelist()
         session = self.patient_cql_connection(node1)
-        create_ks(session, 'set_index_search', 1)
+        create_ks(session, 'set_index_search', 1, allow_transient=False)
 
         stmt = ("CREATE TABLE set_index_search.users ("
                 "user_id uuid PRIMARY KEY,"
@@ -890,7 +890,7 @@ class TestSecondaryIndexesOnCollections(Tester):
         cluster.populate(1).start()
         [node1] = cluster.nodelist()
         session = self.patient_cql_connection(node1)
-        create_ks(session, 'map_double_index', 1)
+        create_ks(session, 'map_double_index', 1, allow_transient=False)
         session.execute("""
                 CREATE TABLE map_tbl (
                     id uuid primary key,
@@ -941,7 +941,7 @@ class TestSecondaryIndexesOnCollections(Tester):
         cluster.populate(1).start()
         [node1] = cluster.nodelist()
         session = self.patient_cql_connection(node1)
-        create_ks(session, 'map_index_search', 1)
+        create_ks(session, 'map_index_search', 1, allow_transient=False)
 
         stmt = ("CREATE TABLE map_index_search.users ("
                 "user_id uuid PRIMARY KEY,"
@@ -1088,7 +1088,7 @@ class TestUpgradeSecondaryIndexes(Tester):
 
         [node1] = cluster.nodelist()
         session = self.patient_cql_connection(node1)
-        create_ks(session, 'index_upgrade', 1)
+        create_ks(session, 'index_upgrade', 1, allow_transient=False)
         session.execute("CREATE TABLE index_upgrade.table1 (k int PRIMARY KEY, v int)")
         session.execute("CREATE INDEX ON index_upgrade.table1(v)")
         session.execute("INSERT INTO index_upgrade.table1 (k,v) VALUES (0,0)")
@@ -1163,7 +1163,7 @@ class TestPreJoinCallback(Tester):
 
         # Create a table with 2i
         session = self.patient_cql_connection(node1)
-        create_ks(session, 'ks', 1)
+        create_ks(session, 'ks', 1, allow_transient=False)
         create_cf(session, 'cf', columns={'c1': 'text', 'c2': 'text'})
         session.execute("CREATE INDEX c2_idx ON cf (c2);")
 

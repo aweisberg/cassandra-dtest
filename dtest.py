@@ -339,15 +339,18 @@ transient_conversions = {
     '5': '5/2'
 }
 
-def create_ks(session, name, rf):
+def create_ks(session, name, rf, allow_transient=True, if_not_exists=False):
     query = 'CREATE KEYSPACE %s WITH replication={%s}'
+    if if_not_exists:
+        query = 'CREATE KEYSPACE IF NOT EXISTS %s WITH replication={%s}'
+
     if isinstance(rf, int):
         # we assume simpleStrategy
-        query = query % (name, "'class':'SimpleStrategy', 'replication_factor':%s" % (transient_conversions.get(rf, str(rf)) if attempt_transient_replication else str(rf)))
+        query = query % (name, "'class':'SimpleStrategy', 'replication_factor':%s" % (transient_conversions.get(rf, str(rf)) if attempt_transient_replication and allow_transient else str(rf)))
     else:
         assert len(rf) >= 0, "At least one datacenter/rf pair is needed"
         # we assume networkTopologyStrategy
-        options = (', ').join(['\'%s\':%s' % (d, (transient_conversions.get(r, str(r)) if attempt_transient_replication else str(r))) for d, r in rf.items()])
+        options = (', ').join(['\'%s\':%s' % (d, (transient_conversions.get(r, str(r)) if attempt_transient_replication and allow_transient else str(r))) for d, r in rf.items()])
         query = query % (name, "'class':'NetworkTopologyStrategy', %s" % options)
 
     try:

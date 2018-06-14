@@ -215,7 +215,7 @@ class TestNodetool(Tester):
         assert 0 == len(err), err
         assert not re.search(notice_message, out)
 
-        session.execute("CREATE KEYSPACE ks3 WITH replication = { 'class':'SimpleStrategy', 'replication_factor':3}")
+        create_ks(session, "ks3", 3)
 
         # With a keyspace without the same replication factor, we should get the notice
         out, err, _ = node.nodetool('status')
@@ -344,10 +344,10 @@ class TestNodetool(Tester):
         node1_dc1, node2_dc1, node1_dc2, node2_dc2, node3_dc2, node1_dc3 = cluster.nodelist()
 
         session_dc1 = self.patient_cql_connection(node1_dc1)
-        session_dc1.execute("create KEYSPACE ks1 WITH replication = {'class': 'NetworkTopologyStrategy', 'dc1': 3, 'dc2':5, 'dc3':1}")
+        create_ks(session_dc1, ks1, {'dc1': 3, 'dc2':5, 'dc3':1})
 
         session_dc3 = self.patient_cql_connection(node1_dc3)
-        session_dc3.execute("create KEYSPACE ks2 WITH replication = {'class': 'NetworkTopologyStrategy', 'dc1': 3, 'dc2':5, 'dc3':1}")
+        create_ks(session_dc3, "ks2", {'dc1': 3, 'dc2':5, 'dc3':1})
 
         out_node1_dc1, err, _ = node1_dc1.nodetool('describecluster')
         assert 0 == len(err), err
