@@ -159,7 +159,12 @@ class TestReadRepair(Tester):
         # Alter so RF=n but don't repair, calling tests will execute queries to exercise read repair,
         # either at CL.ALL or after setting read_repair_chance to 100%.
         logger.debug("Changing RF from 1 to 3")
-        session.execute("""ALTER KEYSPACE alter_rf_test
+        if self.dtest_config.attempt_transient_replication:
+            session.execute("""ALTER KEYSPACE alter_rf_test
+                            WITH replication = {'class': 'SimpleStrategy', 'replication_factor': '3/1'};""")
+
+        else:
+           session.execute("""ALTER KEYSPACE alter_rf_test
                            WITH replication = {'class': 'SimpleStrategy', 'replication_factor': 3};""")
 
         return initial_replica, non_replicas

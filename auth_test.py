@@ -58,10 +58,16 @@ class TestAuth(Tester):
         )
         assert 1 == auth_metadata.replication_strategy.replication_factor
 
-        session.execute("""
-            ALTER KEYSPACE system_auth
-                WITH replication = {'class':'SimpleStrategy', 'replication_factor':3};
-        """)
+        if self.dtest_config.attempt_transient_replication:
+            session.execute("""
+                       ALTER KEYSPACE system_auth
+                           WITH replication = {'class':'SimpleStrategy', 'replication_factor': '3/1'};
+                   """)
+        else:
+            session.execute("""
+                ALTER KEYSPACE system_auth
+                    WITH replication = {'class':'SimpleStrategy', 'replication_factor':3};
+            """)
 
         assert 3 == auth_metadata.replication_strategy.replication_factor
 
