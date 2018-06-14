@@ -43,6 +43,7 @@ RUN_STATIC_UPGRADE_MATRIX = os.environ.get('RUN_STATIC_UPGRADE_MATRIX', '').lowe
 
 logger = logging.getLogger(__name__)
 
+attempt_transient_replication = False
 
 def get_sha(repo_dir):
     try:
@@ -236,6 +237,8 @@ class Tester:
     def set_dtest_setup_on_function(self, fixture_dtest_setup):
         self.fixture_dtest_setup = fixture_dtest_setup
         self.dtest_config = fixture_dtest_setup.dtest_config
+        global attempt_transient_replication
+        attempt_transient_replication = fixture_dtest_setup.dtest_config.attempt_transient_replication
 
     def set_node_to_current_version(self, node):
         version = os.environ.get('CASSANDRA_VERSION')
@@ -328,15 +331,23 @@ def create_cf_simple(session, name, query):
     #Going to ignore OperationTimedOut from create CF, so need to validate it was indeed created
     session.execute('SELECT * FROM %s LIMIT 1' % name)
 
+
+transient_conversions = {
+    3: '3/1',
+    '3': '3/1',
+    5 : '5/2',
+    '5': '5/2'
+}
+
 def create_ks(session, name, rf):
     query = 'CREATE KEYSPACE %s WITH replication={%s}'
     if isinstance(rf, int):
         # we assume simpleStrategy
-        query = query % (name, "'class':'SimpleStrategy', 'replication_factor':%d" % rf)
+        query = query % (name, "'class':'SimpleStrategy', 'replication_factor':%s" % (transient_conversions.get(rf, str(rf)) if attempt_transient_replication else str(rf)))
     else:
         assert len(rf) >= 0, "At least one datacenter/rf pair is needed"
         # we assume networkTopologyStrategy
-        options = (', ').join(['\'%s\':%d' % (d, r) for d, r in rf.items()])
+        options = (', ').join(['\'%s\':%s' % (d, (transient_conversions.get(r, str(r)) if attempt_transient_replication else str(r))) for d, r in rf.items()])
         query = query % (name, "'class':'NetworkTopologyStrategy', %s" % options)
 
     try:

@@ -21,6 +21,7 @@ class DTestConfig:
         self.keep_test_dir = False
         self.enable_jacoco_code_coverage = False
         self.jemalloc_path = find_libjemalloc()
+        self.attempt_transient_replication = False
 
     def setup(self, request):
         self.use_vnodes = request.config.getoption("--use-vnodes")
@@ -40,6 +41,7 @@ class DTestConfig:
         self.disable_active_log_watching = request.config.getoption("--disable-active-log-watching")
         self.keep_test_dir = request.config.getoption("--keep-test-dir")
         self.enable_jacoco_code_coverage = request.config.getoption("--enable-jacoco-code-coverage")
+        self.attempt_transient_replication = request.config.getoption("--attempt-transient-replication")
 
     def get_version_from_build(self):
         # There are times when we want to know the C* version we're testing against

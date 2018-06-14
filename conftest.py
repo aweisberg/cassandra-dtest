@@ -75,6 +75,8 @@ def pytest_addoption(parser):
                           "after the test completes")
     parser.addoption("--enable-jacoco-code-coverage", action="store_true", default=False,
                      help="Enable JaCoCo Code Coverage Support")
+    parser.addoption("--attempt-transient-replication", action="store_true", default=False,
+                     help="Attempt to modify tests to use transient replication where possible")
 
 
 def sufficient_system_resources_for_resource_intensive_tests():
