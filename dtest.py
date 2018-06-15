@@ -339,6 +339,7 @@ transient_conversions = {
     '5': '5/2'
 }
 
+
 def create_ks(session, name, rf, allow_transient=True, if_not_exists=False):
     query = 'CREATE KEYSPACE %s WITH replication={%s}'
     if if_not_exists:

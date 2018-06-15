@@ -406,6 +406,9 @@ class DTestSetup:
         if self.setup_overrides is not None and len(self.setup_overrides.cluster_options) > 0:
             values = merge_dicts(values, self.setup_overrides.cluster_options)
 
+        if self.dtest_config.attempt_transient_replication:
+            values = merge_dicts(values, { 'enable_transient_replication' : 'true' })
+
         # No more thrift in 4.0, and start_rpc doesn't exists anymore
         if self.cluster.version() >= '4' and 'start_rpc' in values:
             del values['start_rpc']
