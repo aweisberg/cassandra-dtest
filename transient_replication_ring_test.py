@@ -129,9 +129,9 @@ class TestTransientReplicationRing(Tester):
 
     def create_table(self, session, never_speculate=False):
         if never_speculate:
-            session.execute("CREATE TABLE %s.%s (pk varchar, ck int, value int, PRIMARY KEY (pk, ck)) WITH speculative_retry = 'NEVER'" % (self.keyspace, self.table))
+            session.execute("CREATE TABLE %s.%s (pk varchar, ck int, value int, PRIMARY KEY (pk, ck)) WITH speculative_retry = 'NEVER' AND read_repair = 'NONE'" % (self.keyspace, self.table))
         else:
-            session.execute("CREATE TABLE %s.%s (pk varchar, ck int, value int, PRIMARY KEY (pk, ck))" % (self.keyspace, self.table))
+            session.execute("CREATE TABLE %s.%s (pk varchar, ck int, value int, PRIMARY KEY (pk, ck)) WITH read_repair = 'NONE'" % (self.keyspace, self.table))
         print(str(self.node1.run_cqlsh("describe table %s.%s" % (self.keyspace, self.table))))
 
     def quorum(self, session, stmt_str):
