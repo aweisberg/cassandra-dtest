@@ -704,6 +704,7 @@ class TestTransientReplication(TransientReplicationBase):
         self.assert_has_sstables(self.node2, flush=True)
         self.assert_has_no_sstables(self.node3, flush=True)
 
+    @pytest.mark.skip(reason="Doesn't test quite the right combination of forbidden RF changes right now")
     def test_keyspace_rf_changes(self):
         """ they should throw an exception """
         session = self.exclusive_cql_connection(self.node1)
