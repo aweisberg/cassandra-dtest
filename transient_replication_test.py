@@ -811,7 +811,7 @@ class TestTransientReplicationSpeculativeQueries(TransientReplicationBase):
         replication_params['datacenter1'] = self.replication_factor()
         replication_params = ', '.join("'%s': '%s'" % (k, v) for k, v in replication_params.items())
         session.execute("CREATE KEYSPACE %s WITH REPLICATION={%s}" % (self.keyspace, replication_params))
-        session.execute("CREATE TABLE %s.%s (pk int, ck int, value int, PRIMARY KEY (pk, ck)) WITH speculative_retry = 'NEVER';" % (self.keyspace, self.table))
+        session.execute("CREATE TABLE %s.%s (pk int, ck int, value int, PRIMARY KEY (pk, ck)) WITH speculative_retry = 'NEVER' AND read_repair = 'NONE';" % (self.keyspace, self.table))
 
     @pytest.mark.no_vnodes
     def test_always_speculate(self):
