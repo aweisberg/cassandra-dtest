@@ -4,8 +4,9 @@ import types
 from struct import pack
 from uuid import UUID
 
-from cassandra import ConsistencyLevel
+from cassandra import ConsistencyLevel, InvalidRequest
 from cassandra.query import SimpleStatement
+from cassandra.protocol import ConfigurationException
 from ccmlib.node import Node
 
 from dtest import Tester
@@ -193,7 +194,7 @@ class TransientReplicationBase(Tester):
         replication_params['datacenter1'] = self.replication_factor()
         replication_params = ', '.join("'%s': '%s'" % (k, v) for k, v in replication_params.items())
         session.execute("CREATE KEYSPACE %s WITH REPLICATION={%s}" % (self.keyspace, replication_params))
-        session.execute("CREATE TABLE %s.%s (pk int, ck int, value int, PRIMARY KEY (pk, ck)) WITH speculative_retry = 'NEVER'" % (self.keyspace, self.table))
+        session.execute("CREATE TABLE %s.%s (pk int, ck int, value int, PRIMARY KEY (pk, ck)) WITH speculative_retry = 'NEVER' AND read_repair = 'NONE'" % (self.keyspace, self.table))
 
     @pytest.fixture(scope='function', autouse=True)
     def setup_cluster(self, fixture_dtest_setup):
@@ -403,10 +404,12 @@ class TestTransientReplication(TransientReplicationBase):
                    [[1, 1, 1]],
                    cl=ConsistencyLevel.QUORUM)
 
+    @pytest.mark.skip(reason="Waiting until monotonic reads https://issues.apache.org/jira/browse/CASSANDRA-14665")
     @pytest.mark.no_vnodes
     def test_blocking_read_repair_from_transient_node_transient_coordinator(self):
         self._test_blocking_read_repair_from_transient_node(self.node3)
 
+    @pytest.mark.skip(reason="Waiting until monotonic reads https://issues.apache.org/jira/browse/CASSANDRA-14665")
     @pytest.mark.no_vnodes
     def test_blocking_read_repair_from_transient_node_full_coordinator(self):
         self._test_blocking_read_repair_from_transient_node(self.node2)
@@ -700,6 +703,26 @@ class TestTransientReplication(TransientReplicationBase):
         self.assert_has_sstables(self.node1, flush=True)
         self.assert_has_sstables(self.node2, flush=True)
         self.assert_has_no_sstables(self.node3, flush=True)
+
+    def test_keyspace_rf_changes(self):
+        """ they should throw an exception """
+        session = self.exclusive_cql_connection(self.node1)
+        replication_params = OrderedDict()
+        replication_params['class'] = 'NetworkTopologyStrategy'
+        assert self.replication_factor() == '3/1'
+        replication_params['datacenter1'] = '5/2'
+        replication_params = ', '.join("'%s': '%s'" % (k, v) for k, v in replication_params.items())
+        with pytest.raises(ConfigurationException):
+            session.execute("ALTER KEYSPACE %s WITH REPLICATION={%s}" % (self.keyspace, replication_params))
+
+    def test_disabled_read_repair(self):
+        """ shouldn't allow creating tables without read repair disabled """
+        session = self.exclusive_cql_connection(self.node1)
+        with pytest.raises(InvalidRequest):
+            session.execute("CREATE TABLE %s.tbl2 (pk int, ck int, value int, PRIMARY KEY (pk, ck))" % self.keyspace)
+
+        with pytest.raises(InvalidRequest):
+            session.execute("ALTER TABLE %s.%s WITH read_repair = 'BLOCKING'" % (self.keyspace, self.table))
 
 
 class TestTransientReplicationForwarding(TransientReplicationBase):
