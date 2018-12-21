@@ -516,7 +516,6 @@ class TestLoadMdSStables(TestBaseSStableLoader):
 
 
 @pytest.mark.upgrade_test
-@pytest.mark.skip("4.0 sstableloader can't handle formerly compact tables even after drop compact storage, rebuild, cleanup")
 @since('4.0', max_version='5')
 class TestLoadMdCompactSStables(TestBaseSStableLoader):
     upgrade_from = '3.0.17'
@@ -528,9 +527,7 @@ class TestLoadMdCompactSStables(TestBaseSStableLoader):
 class TestLoadMdThreeOneOneSStables(TestBaseSStableLoader):
     upgrade_from = '3.11.3'
 
-
 @pytest.mark.upgrade_test
-@pytest.mark.skip("4.0 sstableloader can't handle formerly compact tables even after drop compact storage, rebuild, cleanup")
 @since('4.0', max_version='5')
 class TestLoadMdThreeOneOneCompactSStables(TestBaseSStableLoader):
     upgrade_from = '3.11.3'
