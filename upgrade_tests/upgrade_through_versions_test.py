@@ -68,7 +68,7 @@ def data_writer(tester, to_verify_queue, verification_done_queue, rewrite_probab
 
             session.execute(prepared, (val, key))
 
-            to_verify_queue.put((key, val,))
+            to_verify_queue.put_nowait((key, val,))
         except Exception:
             logger.debug("Error in data writer process!")
             to_verify_queue.close()
@@ -166,7 +166,7 @@ def counter_incrementer(tester, to_verify_queue, verification_done_queue, rewrit
 
             session.execute(prepared, (key))
 
-            to_verify_queue.put((key, count + 1,))
+            to_verify_queue.put_nowait((key, count + 1,))
         except Exception:
             logger.debug("Error in counter incrementer process!")
             to_verify_queue.close()
