@@ -74,10 +74,9 @@ class TestCqlshCopy(Tester):
 
     @pytest.fixture(scope="function", autouse=True)
     def tearDown(self):
+        self._tempfiles = []
         yield None
         self.delete_temp_files()
-        self._tempfiles = []
-        super(TestCqlshCopy, self).tearDown()
 
     def get_temp_file(self, prefix=template, suffix=""):
         """
@@ -280,10 +279,16 @@ class TestCqlshCopy(Tester):
                 return '{{{}}}'.format(', '.join(['{}: {}'.format(maybe_quote(t[0]), maybe_quote(t[1]))
                                                   for t in sorted(self)]))
 
+            def items(self):
+                return [i for i in self.iteritems()]
+
         class ImmutableSet(SortedSet):
 
             def __repr__(self):
                 return '{{{}}}'.format(', '.join([maybe_quote(t) for t in sorted(self._items)]))
+
+            def __hash__(self):
+                return hash(str(self))
 
         class Name(namedtuple('Name', ('firstname', 'lastname'))):
             __slots__ = ()
