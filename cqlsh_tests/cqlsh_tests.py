@@ -27,7 +27,6 @@ since = pytest.mark.since
 logger = logging.getLogger(__name__)
 
 
-@pytest.mark.skip("These aren't functioning just yet")
 class TestCqlsh(Tester):
 
     @classmethod
@@ -1099,7 +1098,8 @@ VALUES (4, blobAsInt(0x), '', blobAsBigint(0x), 0x, blobAsBoolean(0x), blobAsDec
         with open(self.tempfile.name, 'r') as csvfile:
             csvreader = csv.reader(csvfile)
             result_list = [list(map(str, cql_row)) for cql_row in results]
-            assert result_list == csvreader
+            for a, b in zip(result_list, csvreader):
+                assert a == b
 
         # import the CSV file with COPY FROM
         session.execute("TRUNCATE ks.testcopyto")
@@ -1428,7 +1428,7 @@ Tracing session:""")
             USE client_warnings;
             CREATE TABLE test (id int, val text, PRIMARY KEY (id))""")
 
-        assert len(stderr), 0 == "Failed to execute cqlsh: {}".format(stderr)
+        assert len(stderr) == 0 , "Failed to execute cqlsh: {}".format(stderr)
 
         session = self.patient_cql_connection(node1)
         prepared = session.prepare("INSERT INTO client_warnings.test (id, val) VALUES (?, 'abc')")
@@ -1465,7 +1465,7 @@ Tracing session:""")
         node1, = self.cluster.nodelist()
 
         stdout, stderr = self.run_cqlsh(node1, cmds='USE system', cqlsh_options=['--debug', '--connect-timeout=10'])
-        assert "Using connect timeout: 10 seconds" in stderr
+        assert "Using connect timeout: 10 seconds" in stderr.decode()
 
     def test_update_schema_with_down_node(self):
         """
@@ -1626,11 +1626,11 @@ Tracing session:""")
         node1, = self.cluster.nodelist()
 
         out, err = self.run_cqlsh(node1, cmd, env_vars={'TERM': 'xterm'})
-        assert "" == err
+        assert "" == err.decode()
 
         # Can't check escape sequence on cmd prompt. Assume no errors is good enough metric.
         if not common.is_win():
-            assert re.search(chr(27) + r"\[[0,1,2]?J", out)
+            assert re.search(chr(27) + r"\[[0,1,2]?J", out.decode())
 
     def test_batch(self):
         """
@@ -1669,12 +1669,11 @@ Tracing session:""")
         sys.stdout.flush()
         p = subprocess.Popen([cli] + args, env=env, stdin=subprocess.PIPE, stderr=subprocess.PIPE, stdout=subprocess.PIPE)
         for cmd in cmds.split(';'):
-            p.stdin.write(cmd + ';\n')
-        p.stdin.write("quit;\n")
+            p.stdin.write((cmd + ';\n').encode())
+        p.stdin.write("quit;\n".encode())
         return p.communicate()
 
 
-@pytest.mark.skip("These aren't functioning just yet")
 class TestCqlshSmoke(Tester):
     """
     Tests simple use cases for clqsh.
@@ -1682,9 +1681,9 @@ class TestCqlshSmoke(Tester):
 
     @pytest.fixture(scope='function', autouse=True)
     def fixture_cluster_setup(self, fixture_dtest_setup):
-        self.cluster.populate(1).start(wait_for_binary_proto=True)
-        [self.node1] = self.cluster.nodelist()
-        self.session = self.patient_cql_connection(self.node1)
+        fixture_dtest_setup.cluster.populate(1).start(wait_for_binary_proto=True)
+        [self.node1] = fixture_dtest_setup.cluster.nodelist()
+        self.session = fixture_dtest_setup.patient_cql_connection(self.node1)
 
     def test_uuid(self):
         """
@@ -1947,7 +1946,6 @@ class TestCqlshSmoke(Tester):
         return [table.name for table in list(self.session.cluster.metadata.keyspaces[keyspace].tables.values())]
 
 
-@pytest.mark.skip("These aren't functioning just yet")
 class CqlLoginTest(Tester):
     """
     Tests login which requires password authenticator
