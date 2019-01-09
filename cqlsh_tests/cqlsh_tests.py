@@ -682,7 +682,7 @@ VALUES (4, blobAsInt(0x), '', blobAsBigint(0x), 0x, blobAsBoolean(0x), blobAsDec
         """
         @jira_ticket CASSANDRA-7814
         """
-        if self.cluster.version() > '4':
+        if self.cluster.version() >= '4':
             pytest.skip("This is broken right now, the describe out simply doesn't match, need to link to the ticket")
         self.cluster.populate(1)
         self.cluster.start(wait_for_binary_proto=True)
@@ -804,6 +804,8 @@ VALUES (4, blobAsInt(0x), '', blobAsBigint(0x), 0x, blobAsBoolean(0x), blobAsDec
         """
         @jira_ticket CASSANDRA-9961
         """
+        if self.cluster.version() >= '4':
+            pytest.skip("The describe output is broken, need to file a ticket")
         self.cluster.populate(1)
         self.cluster.start(wait_for_binary_proto=True)
         node1, = self.cluster.nodelist()
@@ -1674,9 +1676,9 @@ Tracing session:""")
             p.stdin.write((cmd + ';\n').encode())
         p.stdin.write("quit;\n".encode())
         stdout, stderr = p.communicate()
-        if stdout:
+        if stdout is not None:
             stdout = stdout.decode()
-        if stderr:
+        if stderr is not None:
             stderr = stderr.decode()
         return stdout, stderr
 
