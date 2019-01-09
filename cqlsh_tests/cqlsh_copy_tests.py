@@ -64,10 +64,6 @@ class TestCqlshCopy(Tester):
     @jira_ticket CASSANDRA-3906
     """
 
-    def __init__(self, *args, **kwargs):
-        Tester.__init__(self, *args, **kwargs)
-        self._tempfiles = []
-
     @classmethod
     def setUpClass(cls):
         cls._cached_driver_methods = monkeypatch_driver()
@@ -76,8 +72,11 @@ class TestCqlshCopy(Tester):
     def tearDownClass(cls):
         unmonkeypatch_driver(cls._cached_driver_methods)
 
+    @pytest.fixture(scope="function", autouse=True)
     def tearDown(self):
+        yield None
         self.delete_temp_files()
+        self._tempfiles = []
         super(TestCqlshCopy, self).tearDown()
 
     def get_temp_file(self, prefix=template, suffix=""):
