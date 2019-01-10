@@ -447,8 +447,7 @@ UPDATE varcharmaptable SET varcharvarintmap['Vitrum edere possum, mihi non nocet
 
         node1, = self.cluster.nodelist()
 
-        output, err, _ = node1.run_cqlsh(cmds="ä;".encode('utf8'))
-        err = err.decode('utf8')
+        output, err, _ = node1.run_cqlsh(cmds="ä;")
         assert 'Invalid syntax' in err
         assert 'ä' in err
 
@@ -1519,7 +1518,7 @@ Tracing session:""")
         The final two steps of the test should not fall down. If one does, that
         indicates the output of DESCRIBE is not a correct CREATE TABLE statement.
         """
-        if self.cluster.version() <= '4':
+        if self.cluster.version() >= '4':
             pytest.skip("This is broken, need to file a ticket")
         self.cluster.populate(1)
         self.cluster.start(wait_for_binary_proto=True)
@@ -1550,7 +1549,7 @@ Tracing session:""")
         @jira_ticket CASSANDRA-9961 and CASSANDRA-10348
         """
         if self.cluster.version() >= '4':
-            pytest.mark.skip("This is broken right now need to file a ticket")
+            pytest.skip("This is broken right now need to file a ticket")
         self.cluster.populate(1)
         self.cluster.start(wait_for_binary_proto=True)
         node1, = self.cluster.nodelist()

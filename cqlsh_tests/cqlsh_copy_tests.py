@@ -31,6 +31,8 @@ from dtest import (Tester, create_ks)
 from tools.data import rows_to_list
 from tools.metadata_wrapper import (UpdatingClusterMetadataWrapper,
                                     UpdatingTableMetadataWrapper)
+from tools.paging import PageAssertionMixin
+
 
 since = pytest.mark.since
 logger = logging.getLogger(__name__)
@@ -58,7 +60,7 @@ class UTC(datetime.tzinfo):
         return datetime.timedelta(0)
 
 
-class TestCqlshCopy(Tester):
+class TestCqlshCopy(Tester, PageAssertionMixin):
     """
     Tests the COPY TO and COPY FROM features in cqlsh.
     @jira_ticket CASSANDRA-3906
@@ -361,6 +363,7 @@ class TestCqlshCopy(Tester):
         cassandra_dir = self.cluster.nodelist()[0].get_install_dir()
 
         try:
+            sys.path = sys.path + [os.path.join(cassandra_dir, 'pylib/cqlshlib')]
             sys.path = sys.path + [os.path.join(cassandra_dir, 'pylib')]
             import cqlshlib
             yield cqlshlib
@@ -1849,7 +1852,8 @@ class TestCqlshCopy(Tester):
                 assert expected_err in err
                 return
 
-            assert [['0', falseval], ['1', trueval]] == list(csv_rows(tempfile.name))
+            self.assertEqualIgnoreOrder([['0', falseval], ['1', trueval]], csv_rows(tempfile.name))
+            assert [['1', trueval], ['0', falseval]] == list(csv_rows(tempfile.name))
             exported_results = list(self.session.execute("SELECT * FROM testbooleans"))
 
             logger.debug('Importing from csv file: {}'.format(tempfile.name))
@@ -2514,8 +2518,7 @@ class TestCqlshCopy(Tester):
         run_copy_to(tempfile2)
 
         # check the length of both files is the same to ensure all exported records were imported
-        self.assertEqual(sum(1 for _ in open(tempfile1.name)),
-                         sum(1 for _ in open(tempfile2.name)))
+        assert sum(1 for _ in open(tempfile1.name)) == sum(1 for _ in open(tempfile2.name))
 
         return ret
 

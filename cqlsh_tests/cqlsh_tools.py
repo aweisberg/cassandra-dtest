@@ -20,7 +20,7 @@ def csv_rows(filename, delimiter=None):
     reader_opts = {}
     if delimiter is not None:
         reader_opts['delimiter'] = delimiter
-    with open(filename, 'rb') as csvfile:
+    with open(filename, 'rt') as csvfile:
         for row in csv.reader(csvfile, **reader_opts):
             yield row
 
