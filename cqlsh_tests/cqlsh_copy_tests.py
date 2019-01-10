@@ -405,7 +405,6 @@ class TestCqlshCopy(Tester, PageAssertionMixin):
     def make_csv_formatter(self, time_format, nullval):
         with self._cqlshlib() as cqlshlib:  # noqa
             from cqlshlib.formatting import format_value, format_value_default
-            from cqlshlib.displaying import NO_COLOR_MAP
         try:
             from cqlshlib.formatting import DateTimeFormat
             date_time_format = DateTimeFormat()
@@ -435,7 +434,7 @@ class TestCqlshCopy(Tester, PageAssertionMixin):
                 format_fn = format_value
 
             if val is None or val == EMPTY or val == nullval:
-                return format_value_default(nullval)
+                return format_value_default(nullval, None, no_color_map=True)
 
             # CASSANDRA-11255 increased COPY TO DOUBLE PRECISION TO 12
             if cql_type_name == 'double' and self.cluster.version() >= LooseVersion('3.6'):
@@ -789,7 +788,7 @@ class TestCqlshCopy(Tester, PageAssertionMixin):
         self.run_cqlsh(cmds=cmds)
 
         result = self.session.execute("SELECT * FROM testcounter")
-        assert data == rows_to_list(result)
+        self.assertEqualIgnoreOrder(data, rows_to_list(result))
 
     def test_reading_counter(self):
         """
@@ -840,7 +839,7 @@ class TestCqlshCopy(Tester, PageAssertionMixin):
         self.run_cqlsh(cmds=cmds)
 
         result = self.session.execute("SELECT * FROM testheader")
-        assert [tuple(d) for d in data] == [tuple(r) for r in rows_to_list(result)]
+        self.assertEqualIgnoreOrder(data, result)
 
     def test_datetimeformat_round_trip(self):
         """
