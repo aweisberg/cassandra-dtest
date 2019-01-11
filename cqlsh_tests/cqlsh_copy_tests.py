@@ -371,7 +371,7 @@ class TestCqlshCopy(Tester, PageAssertionMixin):
             sys.path = saved_path
 
     def assertCsvResultEqual(self, csv_filename, results, table_name=None,
-                             columns=None, cql_type_names=None, nullval=''):
+                             columns=None, cql_type_names=None, nullval='', ignore_order=False):
         if cql_type_names is None:
             if table_name:
                 table_meta = UpdatingTableMetadataWrapper(
@@ -389,7 +389,10 @@ class TestCqlshCopy(Tester, PageAssertionMixin):
 
         self.maxDiff = None
         try:
-            assert csv_results == processed_results
+            if ignore_order:
+                self.assertEqualIgnoreOrder(csv_results, processed_results)
+            else:
+                assert csv_results == processed_results
         except Exception as e:
             if len(csv_results) != len(processed_results):
                 logger.warning("Different # of entries. CSV: " + str(len(csv_results)) +
@@ -929,7 +932,7 @@ class TestCqlshCopy(Tester, PageAssertionMixin):
         self.run_cqlsh(cmds="COPY ks.testttl FROM '{name}' WITH TTL = '5'".format(name=tempfile.name))
 
         result = rows_to_list(self.session.execute("SELECT * FROM testttl"))
-        assert data == result
+        self.assertEqualIgnoreOrder(data, result)
 
         time.sleep(10)
 
@@ -970,8 +973,9 @@ class TestCqlshCopy(Tester, PageAssertionMixin):
 
             expected_rows = num_rows if 0 <= num_rows < num_file_rows else num_file_rows
             expected_rows -= min(num_file_rows, max(0, skip_rows))
-            self.assertEqual([[expected_rows]],
-                             rows_to_list(self.session.execute("SELECT COUNT(*) FROM {}".format(stress_table))))
+            expected = [[expected_rows]]
+            result = rows_to_list(self.session.execute("SELECT COUNT(*) FROM {}".format(stress_table)))
+            self.assertEqualIgnoreOrder(expected, result)
             logger.debug('Imported {} as expected'.format(expected_rows))
 
         # max rows tests
@@ -1025,7 +1029,7 @@ class TestCqlshCopy(Tester, PageAssertionMixin):
             out, err, _ = self.run_cqlsh(cmds="COPY ks.testskipcols FROM '{}' WITH SKIPCOLS = '{}'"
                                          .format(tempfile.name, skip_cols))
             logger.debug(out)
-            assert expected_results == rows_to_list(self.session.execute("SELECT * FROM ks.testskipcols"))
+            self.assertEqualIgnoreOrder(expected_results, self.session.execute("SELECT * FROM ks.testskipcols"))
 
         do_test('c, d ,e', [[1, 2, None, None, None], [6, 7, None, None, None]])
         do_test('b,', [[1, None, 3, 4, 5], [6, None, 8, 9, 10]])
@@ -1073,7 +1077,7 @@ class TestCqlshCopy(Tester, PageAssertionMixin):
             out, err, _ = self.run_cqlsh(cmds="COPY ks.testskipcols FROM '{}' WITH SKIPCOLS = '{}'"
                                          .format(tempfile.name, skip_cols))
             logger.debug(out)
-            assert expected_results == rows_to_list(self.session.execute("SELECT * FROM ks.testskipcols"))
+            self.assertEqualIgnoreOrder(expected_results, self.session.execute("SELECT * FROM ks.testskipcols"))
 
         do_test('c, d ,e', [[1, 1, None, None, None], [2, 1, None, None, None]])
         do_test('b', [[1, 1, 1, 1, 1], [2, 1, 1, 1, 1]])
@@ -1130,7 +1134,7 @@ class TestCqlshCopy(Tester, PageAssertionMixin):
         if not end_token:
             end_token = max_long
 
-        tokens = [murmur3(str(i)) for i in range(num_records)]
+        tokens = [murmur3(str(i).encode()) for i in range(num_records)]
         result = sorted([(str(i), tokens[i]) for i in range(num_records) if begin_token <= tokens[i] <= end_token])
 
         with open(tempfile.name, 'r') as csvfile:
@@ -1296,7 +1300,8 @@ class TestCqlshCopy(Tester, PageAssertionMixin):
             logger.debug('Checking valid rows')
             assert valid_rows == results
             logger.debug('Checking invalid rows')
-            self.assertCsvResultEqual(err_file_name, invalid_rows, cql_type_names=['text', 'int', 'text'])
+            # Ignore order because cqlsh is python 2 with different iteration order for dictionaries
+            self.assertCsvResultEqual(err_file_name, invalid_rows, cql_type_names=['text', 'int', 'text'], ignore_order=True)
 
         do_test(100, 2, 1, self.get_temp_file())
         do_test(10, 50, 1, self.get_temp_file())
