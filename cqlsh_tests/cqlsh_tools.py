@@ -25,9 +25,10 @@ def csv_rows(filename, delimiter=None):
             yield row
 
 
-def assert_csvs_items_equal(filename1, filename2):
+def assert_csvs_items_equal_ignore_order(filename1, filename2):
     with open(filename1, 'r') as x, open(filename2, 'r') as y:
-        assert list(x.readlines()) == list(y.readlines())
+        from tools.paging import assertEqualIgnoreOrder
+        assertEqualIgnoreOrder(x.readlines(), y.readlines())
 
 
 def random_list(gen=None, n=None):
@@ -45,7 +46,7 @@ def random_list(gen=None, n=None):
 
 
 def write_rows_to_csv(filename, data):
-    with open(filename, 'wb') as csvfile:
+    with open(filename, 'wt') as csvfile:
         writer = csv.writer(csvfile)
         for row in data:
             writer.writerow(row)

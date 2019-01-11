@@ -24,9 +24,9 @@ from cassandra.murmur3 import murmur3
 from cassandra.util import SortedSet
 from ccmlib.common import is_win
 
-from .cqlsh_tools import (DummyColorMap, assert_csvs_items_equal, csv_rows,
-                         monkeypatch_driver, random_list, unmonkeypatch_driver,
-                         write_rows_to_csv)
+from .cqlsh_tools import (DummyColorMap, assert_csvs_items_equal_ignore_order, csv_rows,
+                          monkeypatch_driver, random_list, unmonkeypatch_driver,
+                          write_rows_to_csv)
 from dtest import (Tester, create_ks)
 from tools.data import rows_to_list
 from tools.metadata_wrapper import (UpdatingClusterMetadataWrapper,
@@ -1401,8 +1401,8 @@ class TestCqlshCopy(Tester, PageAssertionMixin):
             logger.debug("Importing csv files {}".format(temp_files_str))
             self.run_cqlsh(cmds="COPY ks.testmultifiles FROM '{}'".format(temp_files_str))
 
-            self.assertEqual([[num_rows_per_file * len(tempfiles)]],
-                             rows_to_list(self.session.execute("SELECT COUNT(*) FROM testmultifiles")))
+            assert [[num_rows_per_file * len(tempfiles)]] == rows_to_list(
+                self.session.execute("SELECT COUNT(*) FROM testmultifiles"))
 
         import_and_check(','.join([tempfile.name for tempfile in tempfiles]))
         import_and_check(os.path.join(gettempdir(), 'testreadmult*.csv'))
@@ -1441,12 +1441,12 @@ class TestCqlshCopy(Tester, PageAssertionMixin):
                 num_lines.append(len(open(os.path.join(gettempdir(), f)).readlines()))
                 os.unlink(f)
 
-            num_expected_files = num_records / max_size if num_records % max_size == 0 else (num_records / max_size + 1)
+            num_expected_files = num_records // max_size if num_records % max_size == 0 else (num_records // max_size + 1)
             assert num_expected_files == len(output_files)
             assert num_records + 1 if header else num_records == sum(num_lines)
 
             for i, n in enumerate(sorted(num_lines, reverse=True)):
-                if i < num_records / max_size:
+                if i < num_records // max_size:
                     num_expected_lines = max_size + 1 if i == 0 and header else max_size
                     assert num_expected_lines == n
                 else:
@@ -1487,12 +1487,12 @@ class TestCqlshCopy(Tester, PageAssertionMixin):
         self.run_cqlsh("COPY ks.testorder (a, c, b) TO '{name}'".format(name=tempfile.name))
 
         reference_file = self.get_temp_file()
-        with open(reference_file.name, 'wb') as csvfile:
+        with open(reference_file.name, 'wt') as csvfile:
             writer = csv.writer(csvfile)
             for a, b, c in data:
                 writer.writerow([a, c, b])
 
-        assert_csvs_items_equal(tempfile.name, reference_file.name)
+        assert_csvs_items_equal_ignore_order(tempfile.name, reference_file.name)
 
     def test_explicit_column_order_reading(self):
         """
@@ -1524,12 +1524,12 @@ class TestCqlshCopy(Tester, PageAssertionMixin):
 
         results = list(self.session.execute("SELECT * FROM testorder"))
         reference_file = self.get_temp_file()
-        with open(reference_file.name, 'wb') as csvfile:
+        with open(reference_file.name, 'wt') as csvfile:
             writer = csv.writer(csvfile)
             for a, b, c in data:
                 writer.writerow([a, c, b])
 
-        self.assertCsvResultEqual(reference_file.name, results, 'testorder')
+        self.assertCsvResultEqual(reference_file.name, results, 'testorder', ignore_order=True)
 
     def quoted_column_names_reading_template(self, specify_column_names):
         """
@@ -1565,7 +1565,7 @@ class TestCqlshCopy(Tester, PageAssertionMixin):
         self.run_cqlsh(stmt)
 
         results = list(self.session.execute("SELECT * FROM testquoted"))
-        self.assertCsvResultEqual(tempfile.name, results, 'testquoted')
+        self.assertCsvResultEqual(tempfile.name, results, 'testquoted', ignore_order=True)
 
     def test_quoted_column_names_reading_specify_names(self):
         """
@@ -1620,7 +1620,7 @@ class TestCqlshCopy(Tester, PageAssertionMixin):
             reference_file = self.get_temp_file()
             write_rows_to_csv(reference_file.name, data)
 
-            assert_csvs_items_equal(tempfile.name, reference_file.name)
+            assert_csvs_items_equal_ignore_order(tempfile.name, reference_file.name)
 
     def test_data_validation_on_read_template(self):
         """
@@ -2018,7 +2018,7 @@ class TestCqlshCopy(Tester, PageAssertionMixin):
 
             exported_results = list(self.session.execute("SELECT * FROM testnumberseps"))
             self.maxDiff = None
-            assert expected_vals == list(csv_rows(tempfile.name))
+            self.assertEqualIgnoreOrder(expected_vals, list(csv_rows(tempfile.name)))
 
             logger.debug('Importing from csv file: {} with thousands_sep {} and decimal_sep {}'
                   .format(tempfile.name, thousands_sep, decimal_sep))
@@ -2035,7 +2035,7 @@ class TestCqlshCopy(Tester, PageAssertionMixin):
             cql_type_names = [table_meta.columns[c].cql_type for c in table_meta.columns]
 
             # we format as if we were comparing to csv to overcome loss of precision in the import
-            assert self.result_to_csv_rows(exported_results == cql_type_names,
+            self.assertEqualIgnoreOrder(self.result_to_csv_rows(exported_results,cql_type_names), \
                              self.result_to_csv_rows(imported_results, cql_type_names))
 
         do_test(expected_vals_usual, ',', '.')
@@ -2156,7 +2156,7 @@ class TestCqlshCopy(Tester, PageAssertionMixin):
                                    .format(stress_table, tempfile.name, num_processes))
         logger.debug(out)
         assert 'Using {} child processes'.format(num_processes) in out
-        assert [[num_records]] == rows_to_list(self.session.execute("SELECT COUNT(* FROM {}"
+        assert [[num_records]] == rows_to_list(self.session.execute("SELECT COUNT(*) FROM {}"
                                                                             .format(stress_table)))
 
     def test_round_trip_with_rate_file(self):
@@ -2204,7 +2204,7 @@ class TestCqlshCopy(Tester, PageAssertionMixin):
                        .format(stress_table, tempfile.name, ratefile.name, report_frequency))
 
         # check all records were imported
-        assert [[num_rows]] == rows_to_list(self.session.execute("SELECT COUNT(* FROM {}"
+        assert [[num_rows]] == rows_to_list(self.session.execute("SELECT COUNT(*) FROM {}"
                                                                          .format(stress_table)))
 
         check_rate_file()
@@ -2229,7 +2229,7 @@ class TestCqlshCopy(Tester, PageAssertionMixin):
             config_file = self.get_temp_file()
             logger.debug('Creating config file {}'.format(config_file.name))
 
-            with open(config_file.name, 'wb') as config:
+            with open(config_file.name, 'wt') as config:
                 for line in config_lines:
                     config.write(line + os.linesep)
                 config.close()
@@ -2244,7 +2244,7 @@ class TestCqlshCopy(Tester, PageAssertionMixin):
             return ''
 
         def check_options(out, expected_options):
-            opts = extract_options(out.decode("utf-8"))
+            opts = extract_options(out)
             logger.debug('Options: {}'.format(opts))
             d = json.loads(opts)
             for k, v in expected_options:
