@@ -116,6 +116,8 @@ class TestCqlshCopy(Tester, PageAssertionMixin):
 
             if configuration_options:
                 self.cluster.set_configuration_options(values=configuration_options)
+            os.environ['CCM_MAX_HEAP_SIZE']='1536m'
+            os.environ['CCM_HEAP_NEWSIZE']='256m'
             self.cluster.populate(nodes, tokens=tokens).start(wait_for_binary_proto=True)
         else:
             assert self.cluster.partitioner, p == "Cannot reuse cluster: different partitioner"
