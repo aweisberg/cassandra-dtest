@@ -217,13 +217,14 @@ def test_failure_due_to_timeout(err, *args):
     the rerun of flaky tests likely to suceed if they failed in the first place
     due to environmental issues.
     """
-    if issubclass(err[0], OperationTimedOut) or issubclass(err[0], ToolError) or issubclass(err[0], TimeoutError):
-        if running_in_docker():
-            cleanup_docker_environment_before_test_execution()
-            time.sleep(2)
-        return True
-    else:
-        return False
+    return False
+    #if issubclass(err[0], OperationTimedOut) or issubclass(err[0], ToolError) or issubclass(err[0], TimeoutError):
+    #    if running_in_docker():
+    #        cleanup_docker_environment_before_test_execution()
+    #        time.sleep(2)
+    #    return True
+    #else:
+    #    return False
 
 
 @flaky(rerun_filter=test_failure_due_to_timeout)

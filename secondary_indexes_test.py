@@ -129,7 +129,7 @@ class TestSecondaryIndexes(Tester):
             result = list(session.execute("SELECT * FROM ks.cf WHERE b='1' LIMIT %d;" % (limit,)))
             assert limit == len(result)
 
-    @flaky(3)
+    @flaky
     def test_6924_dropping_ks(self):
         """
         @jira_ticket CASSANDRA-6924
