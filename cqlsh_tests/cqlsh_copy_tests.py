@@ -3080,8 +3080,9 @@ class TestCqlshCopy(Tester, PageAssertionMixin):
         self.run_cqlsh(cmds=cmds)
 
         res = rows_to_list(self.session.execute("SELECT COUNT(*) FROM ks.test_pk_timestamps_with_counters"))[0][0]
-        assert len(records) == res, \
-                         "Failed to import one or more rows, expected {} but got {}".format(len(records), res)
+        assert(
+            len(records) == res
+        ), "Failed to import one or more rows, expected {} but got {}".format(len(records), res)
 
     def test_copy_from_with_wrong_order_or_missing_UDT_fields(self):
         """
