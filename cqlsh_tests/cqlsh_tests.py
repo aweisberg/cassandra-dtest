@@ -189,7 +189,7 @@ class TestCqlsh(Tester, PageAssertionMixin):
         def verify_varcharmap(map_name, expected, encode_value=False):
             rows = list(session.execute("SELECT %s FROM testks.varcharmaptable WHERE varcharkey= '᚛᚛ᚉᚑᚅᚔᚉᚉᚔᚋ ᚔᚈᚔ ᚍᚂᚐᚅᚑ ᚅᚔᚋᚌᚓᚅᚐ᚜';" % map_name))
             if encode_value:
-                got = {k: v.encode("utf-8") for k, v in rows[0][0].items()}
+                got = {k: v.encode() for k, v in rows[0][0].items()}
             else:
                 got = {k: v for k, v in rows[0][0].items()}
             assert got == expected
@@ -306,7 +306,6 @@ class TestCqlsh(Tester, PageAssertionMixin):
         assert output.count('᚛᚛ᚉᚑᚅᚔᚉᚉᚔᚋ ᚔᚈᚔ ᚍᚂᚐᚅᚑ ᚅᚔᚋᚌᚓᚅᚐ᚜') == 2
 
     def test_eat_glass(self):
-        # Need to tag Ryan McGuire to review
         self.cluster.populate(1)
         self.cluster.start(wait_for_binary_proto=True)
 
