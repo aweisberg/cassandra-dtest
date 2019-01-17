@@ -373,7 +373,7 @@ class TestCqlshCopy(Tester, PageAssertionMixin):
             sys.path = saved_path
 
     def assertCsvResultEqual(self, csv_filename, results, table_name=None,
-                             columns=None, cql_type_names=None, nullval='', ignore_order=True):
+                             columns=None, cql_type_names=None, nullval='', ignore_order=False):
         if cql_type_names is None:
             if table_name:
                 table_meta = UpdatingTableMetadataWrapper(
