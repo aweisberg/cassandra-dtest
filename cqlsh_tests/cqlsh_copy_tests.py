@@ -1859,7 +1859,6 @@ class TestCqlshCopy(Tester, PageAssertionMixin):
                 return
 
             self.assertEqualIgnoreOrder([['0', falseval], ['1', trueval]], csv_rows(tempfile.name))
-            assert [['1', trueval], ['0', falseval]] == list(csv_rows(tempfile.name))
             exported_results = list(self.session.execute("SELECT * FROM testbooleans"))
 
             logger.debug('Importing from csv file: {}'.format(tempfile.name))
