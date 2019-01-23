@@ -752,7 +752,7 @@ class TestCqlshCopy(Tester, PageAssertionMixin):
         with open(tempfile.name, 'r') as csvfile:
             csv_values = list(csv.reader(csvfile))
 
-        assert csv_values == [['a', 'b'], ['1', '10'], ['2', '20'], ['3', '30']]
+        self.assertEqualIgnoreOrder(csv_values, [['a', 'b'], ['1', '10'], ['2', '20'], ['3', '30']])
 
     def _test_reading_counter_template(self, copy_options=None):
         """
@@ -1868,7 +1868,7 @@ class TestCqlshCopy(Tester, PageAssertionMixin):
                            .format(tempfile.name, trueval, falseval))
 
             imported_results = list(self.session.execute("SELECT * FROM testbooleans"))
-            assert exported_results == imported_results
+            self.assertEqualIgnoreOrder(exported_results, imported_results)
 
         self.prepare()
         self.session.execute("""
@@ -2921,7 +2921,7 @@ class TestCqlshCopy(Tester, PageAssertionMixin):
         self.run_cqlsh(cmds="COPY {} FROM '{}' WITH MAXBATCHSIZE=1".format(stress_ks_table_name, tempfile.name))
 
         results = list(self.session.execute("SELECT * FROM {}".format(stress_ks_table_name)))
-        self.assertCsvResultEqual(tempfile.name, results, stress_table_name)
+        self.assertCsvResultEqual(tempfile.name, results, stress_table_name, ignore_order=True)
 
         # Import without prepared statements and verify
         self.session.execute("TRUNCATE {}".format(stress_ks_table_name))
