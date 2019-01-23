@@ -517,7 +517,7 @@ class TestCqlshCopy(Tester, PageAssertionMixin):
         logger.debug('Exporting to csv file: {name}'.format(name=tempfile.name))
         self.run_cqlsh(cmds="COPY ks.testlist TO '{name}'".format(name=tempfile.name))
 
-        self.assertCsvResultEqual(tempfile.name, results, 'testlist')
+        self.assertCsvResultEqual(tempfile.name, results, 'testlist', ignore_order=True)
 
     def test_tuple_data(self):
         """
@@ -544,7 +544,7 @@ class TestCqlshCopy(Tester, PageAssertionMixin):
         logger.debug('Exporting to csv file: {name}'.format(name=tempfile.name))
         self.run_cqlsh(cmds="COPY ks.testtuple TO '{name}'".format(name=tempfile.name))
 
-        self.assertCsvResultEqual(tempfile.name, results, 'testtuple')
+        self.assertCsvResultEqual(tempfile.name, results, 'testtuple', ignore_order=True)
 
     def non_default_delimiter_template(self, delimiter):
         """
@@ -574,7 +574,7 @@ class TestCqlshCopy(Tester, PageAssertionMixin):
         cmds += " WITH DELIMITER = '{d}'".format(d=delimiter)
         self.run_cqlsh(cmds=cmds)
 
-        self.assertCsvResultEqual(tempfile.name, results, 'testdelimiter')
+        self.assertCsvResultEqual(tempfile.name, results, 'testdelimiter', ignore_order=True)
 
     def test_colon_delimiter(self):
         """
@@ -643,7 +643,7 @@ class TestCqlshCopy(Tester, PageAssertionMixin):
         results = list(self.session.execute("SELECT * FROM ks.testnullindicator"))
         results_with_null_indicator = [[indicator if value is None else value for value in row] for row in results]
         nullval = indicator if indicator is not None else ''
-        self.assertCsvResultEqual(tempfile.name, results_with_null_indicator, 'testnullindicator', nullval=nullval)
+        self.assertCsvResultEqual(tempfile.name, results_with_null_indicator, 'testnullindicator', nullval=nullval, ignore_order=True)
 
         # Now import back the csv file
         self.session.execute('TRUNCATE ks.testnullindicator')
@@ -885,9 +885,9 @@ class TestCqlshCopy(Tester, PageAssertionMixin):
         with open(tempfile.name, 'r') as csvfile:
             csv_values = list(csv.reader(csvfile))
 
-        assert csv_values == [['1', '2015/01/01 07:00'],
-                               ['2', '2015/06/10 12:30'],
-                               ['3', '2015/12/31 23:59']]
+        self.assertEqualIgnoreOrder(csv_values, [['1', '2015/01/01 07:00'],
+                                                 ['2', '2015/06/10 12:30'],
+                                                 ['3', '2015/12/31 23:59']])
 
         self.session.execute("TRUNCATE testdatetimeformat")
         cmds = "COPY ks.testdatetimeformat FROM '{name}'".format(name=tempfile.name)
@@ -2931,7 +2931,7 @@ class TestCqlshCopy(Tester, PageAssertionMixin):
                        .format(stress_ks_table_name, tempfile.name))
 
         results = list(self.session.execute("SELECT * FROM {}".format(stress_ks_table_name)))
-        self.assertCsvResultEqual(tempfile.name, results, stress_table_name)
+        self.assertCsvResultEqual(tempfile.name, results, stress_table_name, ignore_order=True)
 
     def test_copy_from_with_brackets_in_UDT(self):
         """
