@@ -17,4 +17,4 @@ class TestBootstrapUpgrade(TestBootstrap):
     @pytest.mark.no_vnodes
     @since('3.10', max_version='3.99')
     def test_simple_bootstrap_mixed_versions(self):
-        self._base_bootstrap_test(bootstrap_from_version="3.5")
+        self._base_bootstrap_test(bootstrap_from_version="3.5", compatibility_flag_on=True)

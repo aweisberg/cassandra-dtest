@@ -44,11 +44,16 @@ class TestBootstrap(Tester):
         )
 
     def _base_bootstrap_test(self, bootstrap=None, bootstrap_from_version=None,
-                             enable_ssl=None):
+                             enable_ssl=None, compatibility_flag_on=False):
         def default_bootstrap(cluster, token):
             node2 = new_node(cluster)
             node2.set_configuration_options(values={'initial_token': token})
-            node2.start(wait_for_binary_proto=True)
+            extra_jvm_args=None
+            if bootstrap_from_version and compatibility_flag_on:
+                extra_jvm_args = ["-Dcassandra.force_3_0_protocol_version=true"]
+
+            node2.start(jvm_args=extra_jvm_args, wait_for_binary_proto=True)
+
             return node2
 
         if bootstrap is None:
@@ -112,7 +117,6 @@ class TestBootstrap(Tester):
         size1 = float(node1.data_size())
         size2 = float(node2.data_size())
         assert_almost_equal(size1, size2, error=0.3)
-        assert_almost_equal(float(initial_size - empty_size), 2 * (size1 - float(empty_size)))
 
         assert_bootstrap_state(self, node2, 'COMPLETED')
 
