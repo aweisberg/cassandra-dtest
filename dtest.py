@@ -15,8 +15,6 @@ import cassandra
 
 from subprocess import CalledProcessError
 
-from flaky import flaky
-
 from cassandra import ConsistencyLevel, OperationTimedOut
 from cassandra.auth import PlainTextAuthProvider
 from cassandra.cluster import ExecutionProfile
@@ -194,40 +192,6 @@ def cleanup_docker_environment_before_test_execution():
     p_swap.wait(timeout=60)
 
 
-def test_failure_due_to_timeout(err, *args):
-    """
-    check if we should rerun a test with the flaky plugin or not.
-    for now, only run if we failed the test for one of the following
-    three exceptions: cassandra.OperationTimedOut, ccm.node.ToolError,
-    and ccm.node.TimeoutError.
-
-    - cassandra.OperationTimedOut will be thrown when a cql query made thru
-    the python-driver times out.
-    - ccm.node.ToolError will be thrown when an invocation of a "tool"
-    (in the case of dtests this will almost always invoking stress).
-    - ccm.node.TimeoutError will be thrown when a blocking ccm operation
-    on a individual node times out. In most cases this tends to be something
-    like watch_log_for hitting the timeout before the desired pattern is seen
-    in the node's logs.
-
-    if we failed for one of these reasons - and we're running in docker - run
-    the same "cleanup" logic we run before test execution and test setup begins
-    and for good measure introduce a 2 second sleep. why 2 seconds? because it's
-    magic :) - ideally this gets the environment back into a good state and makes
-    the rerun of flaky tests likely to suceed if they failed in the first place
-    due to environmental issues.
-    """
-    return False
-    #if issubclass(err[0], OperationTimedOut) or issubclass(err[0], ToolError) or issubclass(err[0], TimeoutError):
-    #    if running_in_docker():
-    #        cleanup_docker_environment_before_test_execution()
-    #        time.sleep(2)
-    #    return True
-    #else:
-    #    return False
-
-
-@flaky(rerun_filter=test_failure_due_to_timeout)
 class Tester:
 
     def __getattribute__(self, name):

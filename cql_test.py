@@ -4,8 +4,6 @@ import time
 import pytest
 import logging
 
-from flaky import flaky
-
 from cassandra import ConsistencyLevel, InvalidRequest
 from cassandra.metadata import NetworkTopologyStrategy, SimpleStrategy
 from cassandra.policies import FallthroughRetryPolicy
@@ -1290,7 +1288,6 @@ class TestLWTWithCQL(Tester):
     def _is_new_lwt_format_version(self, version):
         return version > LooseVersion('3.9') or (version > LooseVersion('3.0.9') and version < LooseVersion('3.1'))
 
-    @flaky
     def test_conditional_updates_on_static_columns_with_null_values(self):
         session = self.get_lwttester_session()
 

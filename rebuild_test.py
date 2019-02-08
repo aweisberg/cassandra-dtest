@@ -2,8 +2,6 @@ import pytest
 import time
 import logging
 
-from flaky import flaky
-
 from threading import Thread
 
 from cassandra import ConsistencyLevel
@@ -141,7 +139,6 @@ class TestRebuild(Tester):
         for i in range(0, keys):
             query_c1c2(session, i, ConsistencyLevel.LOCAL_ONE)
 
-    @flaky
     @since('2.2')
     def test_resumable_rebuild(self):
         """
