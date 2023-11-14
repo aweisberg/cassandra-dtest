@@ -3,6 +3,9 @@ try:
     import collections.abc as collections
 except ImportError:
     import collections
+import threading
+import traceback
+import sys
 import logging
 import os
 import platform
@@ -111,6 +114,16 @@ def pytest_configure(config):
         if dtest_config.metatests and config.args[0] == str(os.getcwd()):
             config.args = ['./meta_tests']
 
+    def daemon_task():
+        while True:
+            print("\nLogging thread dump:\n")
+            for th in threading.enumerate():
+                print(th)
+                traceback.print_stack(sys._current_frames()[th.ident], file=sys.stdout)
+                print()
+            time.sleep(600)
+    daemon_thread = threading.Thread(name='Periodic thread dumper', target=daemon_task, daemon=True)
+    daemon_thread.start()
 
 def sufficient_system_resources_for_resource_intensive_tests():
     mem = virtual_memory()
